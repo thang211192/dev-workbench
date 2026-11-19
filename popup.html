@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="vi"><head><meta charset="utf-8"><title>Dev Workbench</title>
+<link rel="stylesheet" href="popup.css"><script type="module" src="popup.js"></script></head>
+<body>
+<header><img src="icons/icon-48.png" width="32" height="32" alt=""><h1>Dev Workbench</h1>
+<select id="language" aria-label="Ngôn ngữ"><option value="vi" lang="vi">Tiếng Việt</option><option value="en" lang="en">English</option></select></header>
+<main>
+<section id="tool-list" aria-labelledby="tools-heading">
+  <div class="tools-header">
+    <h2 id="tools-heading" data-key="tools">Công cụ</h2>
+    <button type="button" id="open-settings" data-tool="settings" aria-label="Cài đặt" title="Cài đặt">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m10 3-.6 2.2-2 .9-2-.8-2 3.4 1.5 1.5v2.5l-1.5 1.5 2 3.4 2-.8 2 .9.6 2.3h4l.6-2.3 2-.9 2 .8 2-3.4-1.5-1.5v-2.5l1.5-1.5-2-3.4-2 .8-2-.9L14 3z"/><circle cx="12" cy="11.5" r="2.7"/></svg>
+    </button>
+  </div>
+  <div class="tool-grid">
+    <button type="button" class="tool-card" data-tool="cors">
+      <span class="tool-icon" aria-hidden="true">⇄</span>
+      <span class="tool-copy"><strong>CORS</strong><small data-key="corsSummary">Truy cập API theo từng tab</small></span>
+      <span id="tool-status" class="tool-status" role="img" aria-label="Đang tải" data-state="loading"></span>
+      <span class="tool-arrow" aria-hidden="true"></span>
+    </button>
+    <button type="button" class="tool-card" id="open-color-picker">
+      <span class="tool-icon color-icon" aria-hidden="true"><span></span></span>
+      <span class="tool-copy"><strong>Color Picker</strong><small data-key="colorSummary">Lấy mã màu từ trang web</small></span>
+      <span class="tool-arrow" aria-hidden="true"></span>
+    </button>
+    <button type="button" class="tool-card" id="open-screenshot">
+      <span class="tool-icon screenshot-icon" aria-hidden="true">⌗</span>
+      <span class="tool-copy"><strong data-key="screenshotTitle">Chụp màn hình</strong><small data-key="screenshotSummary">Chọn vùng, vẽ mũi tên và thêm chữ</small></span>
+      <span class="tool-arrow" aria-hidden="true"></span>
+    </button>
+    <button type="button" class="tool-card" id="open-link-extractor">
+      <span class="tool-icon link-icon" aria-hidden="true">↗</span>
+      <span class="tool-copy"><strong data-key="linkTitle">Lấy liên kết</strong><small data-key="linkSummary">Chọn khối, lọc và sao chép URL</small></span>
+      <span class="tool-arrow" aria-hidden="true"></span>
+    </button>
+  </div>
+  <p id="color-open-error" data-key="colorOpenError" role="alert" hidden>Không thể bật công cụ lấy màu trên trang này. Hãy thử một trang web khác.</p>
+  <p id="screenshot-error" data-key="screenshotError" role="alert" hidden>Không thể mở trình chỉnh sửa trên trang này. Hãy thử một trang web khác.</p>
+  <p id="link-error" data-key="linkError" role="alert" hidden>Không thể mở công cụ lấy liên kết trên trang này.</p>
+</section>
+<button type="button" id="back" hidden><span aria-hidden="true">←</span> <span data-key="back">Công cụ</span></button>
+<section id="cors-view" aria-labelledby="cors-heading" hidden>
+<h2 id="cors-heading" tabindex="-1">CORS</h2>
+<div class="panel">
+<div class="controls"><strong id="status" aria-live="polite">Đang tải…</strong>
+<button id="toggle" class="switch" role="switch" aria-checked="false" aria-label="Cho phép CORS trong tab này" disabled></button></div>
+<p data-key="intro">Cho phép trang trong tab này tải API và tài nguyên qua HTTP hoặc HTTPS.</p>
+<p id="unsupported" data-key="unsupported" hidden>Hãy mở một trang HTTP hoặc HTTPS để bật CORS.</p></div>
+<section class="scope" aria-labelledby="scope-heading">
+  <h3 id="scope-heading" data-key="scope">Phạm vi áp dụng</h3>
+  <dl class="scope-list">
+    <div class="scope-row">
+      <dt data-key="origin">Trang gửi yêu cầu</dt>
+      <dd><code id="tab-origin">—</code><small data-key="tabOnly">Chỉ tab này</small></dd>
+    </div>
+    <div class="scope-row">
+      <dt data-key="destination">Địa chỉ đích</dt>
+      <dd data-key="urls">Mọi URL HTTP/HTTPS</dd>
+    </div>
+  </dl>
+</section>
+<details><summary data-key="conditions">Điều kiện sử dụng</summary><p data-key="help">Dùng với fetch hoặc XMLHttpRequest không gửi thông tin xác thực. Nếu trình duyệt gửi yêu cầu OPTIONS, API cần trả về mã 2xx.</p></details>
+<p id="error" role="alert" hidden></p>
+</section>
+<section id="settings-view" aria-labelledby="settings-heading" hidden>
+  <h2 id="settings-heading" tabindex="-1" data-key="settings">Cài đặt</h2>
+  <div class="panel">
+    <div class="setting-row">
+      <div>
+        <strong id="json-setting-label" data-key="jsonSetting">Xem JSON tự động</strong>
+        <p id="json-setting-help" data-key="jsonSettingHelp">Tô màu và cho phép thu gọn JSON khi mở URL trong tab.</p>
+      </div>
+      <button type="button" id="json-toggle" class="switch" role="switch" aria-checked="false" aria-labelledby="json-setting-label" aria-describedby="json-setting-help" disabled></button>
+    </div>
+  </div>
+  <p id="settings-error" data-key="settingsError" role="alert" hidden>Không thể cập nhật cài đặt. Hãy mở lại tiện ích để thử lại.</p>
+</section>
+</main></body></html>

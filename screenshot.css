@@ -1,0 +1,19 @@
+body { width: auto; height: 100dvh; display: flex; flex-direction: column; }
+header { padding: 9px 14px; flex-wrap: wrap; }
+#close-editor { margin-left: auto; }
+main { position: relative; min-height: 0; flex: 1; display: flex; padding: 0; }
+.toolbar, .tool-group { display: flex; align-items: center; gap: 6px; }
+.toolbar { flex-wrap: wrap; }
+.tool-group { padding-right: 6px; border-right: 1px solid var(--workbench-border); }
+[hidden] { display: none !important; }
+button, input[type=color] { display: grid; place-items: center; width: 38px; height: 36px; padding: 0; border: 1px solid var(--workbench-border); border-radius: 7px; background: var(--workbench-surface); color: var(--workbench-accent); cursor: pointer; }
+button svg { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+button:disabled { opacity: .55; cursor: default; }
+button[aria-pressed=true], button.primary { background: var(--workbench-accent); border-color: var(--workbench-accent); color: #fff; }
+input[type=color] { width: 27px; padding: 5px 3px; }
+.screen-reader { position: absolute; width: 1px; height: 1px; margin: -1px; overflow: hidden; clip-path: inset(50%); }
+#feedback { position: absolute; z-index: 1; top: 8px; right: 12px; margin: 0; padding: 7px 10px; border-radius: 7px; background: var(--workbench-accent); color: #fff; }
+#stage { flex: 1; min-width: 0; display: grid; place-items: center; overflow: hidden; background: var(--workbench-lilac); container-type: size; }
+#canvas-wrap { position: relative; }
+canvas { display: block; width: auto; height: auto; max-width: 100cqw; max-height: 100cqh; cursor: crosshair; touch-action: none; }
+#text-value { position: absolute; width: min(300px, 100cqw); max-width: var(--entry-width); height: 1.35em; margin: 0; padding: 0; border: 0; border-radius: 0; outline: 1px dashed var(--workbench-accent); background: #ffffffcc; font: 600 22px/1.35 "Segoe UI", sans-serif; text-shadow: 0 0 2px var(--workbench-muted); }

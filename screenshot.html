@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Dev Workbench</title>
+  <link rel="stylesheet" href="popup.css">
+  <link rel="stylesheet" href="screenshot.css">
+  <script type="module" src="screenshot.js"></script>
+</head>
+<body>
+  <header>
+    <img src="icons/icon-48.png" width="32" height="32" alt="">
+    <div class="toolbar" id="crop-tools" hidden>
+      <button type="button" id="crop" class="primary" data-label="crop" disabled><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3v15h15M3 6h15v15"/></svg></button>
+      <button type="button" id="full" data-label="full"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 4H4v5m11-5h5v5M4 15v5h5m11-5v5h-5"/></svg></button>
+    </div>
+    <div class="toolbar" id="edit-tools" hidden>
+      <div class="tool-group">
+        <button type="button" id="arrow" aria-pressed="true" data-label="arrow"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 19 19 5m-9 0h9v9"/></svg></button>
+        <input type="color" id="arrow-color" value="#ef4444" data-label="arrowColor">
+      </div>
+      <div class="tool-group">
+        <button type="button" id="text" aria-pressed="false" data-label="text"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 8V5h16v3M12 5v14m-4 0h8"/></svg></button>
+        <input type="color" id="text-color" value="#ef4444" data-label="textColor">
+      </div>
+      <button type="button" id="undo" data-label="undo" disabled><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m8 6-4 4 4 4m-4-4h10a5 5 0 0 1 0 10h-3"/></svg></button>
+      <button type="button" id="copy-image" class="primary" data-label="copyImage"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 15H5a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1h9a1 1 0 0 1 1 1v3"/><rect x="8" y="8" width="12" height="12" rx="1"/></svg></button>
+      <button type="button" id="save" data-label="save"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4v11m-4-4 4 4 4-4M5 16v4h14v-4"/></svg></button>
+    </div>
+    <button type="button" id="close-editor" data-label="close"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18"/></svg></button>
+  </header>
+  <main>
+    <p id="hint" class="screen-reader" role="status"></p>
+    <p id="feedback" role="status" hidden></p>
+    <div id="stage" hidden>
+      <div id="canvas-wrap">
+        <canvas id="image" aria-labelledby="hint"></canvas>
+        <input id="text-value" data-label="textEntry" maxlength="300" autocomplete="off" hidden>
+      </div>
+    </div>
+  </main>
+</body>
+</html>

@@ -1,0 +1,5 @@
+{
+  "description": {
+    "message": "Toggle CORS per tab and format raw JSON directly in the browser."
+  }
+}

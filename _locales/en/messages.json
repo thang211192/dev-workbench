@@ -1,5 +1,8 @@
 {
+  "extensionName": {
+    "message": "Dev Workbench"
+  },
   "description": {
-    "message": "Toggle CORS per tab and format raw JSON directly in the browser."
+    "message": "Inspect web pages and API responses with tab-scoped CORS, JSON formatting, color picking, screenshots and link extraction."
   }
 }

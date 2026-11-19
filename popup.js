@@ -24,7 +24,7 @@ const messages = {
     switchLabel: "Cho phép CORS trong tab này", languageLabel: "Ngôn ngữ"
   },
   en: {
-    tools: "Tools", back: "Tools", corsSummary: "API access per tab",
+    tools: "Tools", back: "Tools", corsSummary: "Cross-origin API calls in this tab",
     intro: "Allow the page in this tab to load APIs and resources over HTTP or HTTPS.",
     scope: "Where it applies", origin: "Requesting page", tabOnly: "This tab only", destination: "Destination", urls: "Any HTTP/HTTPS URL",
     unsupported: "Open an HTTP or HTTPS page to enable CORS.",

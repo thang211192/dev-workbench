@@ -1,5 +1,8 @@
 {
+  "extensionName": {
+    "message": "Dev Workbench"
+  },
   "description": {
-    "message": "Bộ công cụ cho lập trình viên web để bật CORS theo từng tab và định dạng JSON trực tiếp trong trình duyệt."
+    "message": "Kiểm tra trang web và API với CORS theo tab, xem JSON, lấy màu, chụp ảnh và trích xuất liên kết."
   }
 }

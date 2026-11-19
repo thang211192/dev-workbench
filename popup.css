@@ -41,6 +41,8 @@ main h2 { font-size: 17px; margin: 0 0 10px; }
 .tool-copy { flex: 1; }
 .tool-copy strong, .tool-copy small { display: block; }
 .tool-copy small { color: var(--workbench-muted); font-size: 12px; }
+[data-tool="cors"] .tool-copy { min-width: 0; }
+[data-key="corsSummary"] { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .tool-status { --thumb-size: 12px; --thumb-travel: 14px; flex: 0 0 34px; height: 20px; padding: 3px; }
 .tool-status[data-state=loading] { opacity: .55; }
 .tool-status[data-state=failed] { background: var(--workbench-error); }

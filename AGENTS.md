@@ -9,3 +9,4 @@ Read the relevant tool document before changing its behavior. Update that docume
 - [Color Picker](docs/color-picker.md)
 - [Screenshot](docs/screenshot.md)
 - [Link Extractor](docs/link-extractor.md)
+- [SEO Meta One Click](docs/seo-meta.md)

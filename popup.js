@@ -1,6 +1,7 @@
 import { openScreenshotOverlay } from "./screenshot-overlay.js";
 import { startColorPicker } from "./color-picker.js";
 import { openLinkExtractor } from "./link-extractor.js";
+import { setupSeo } from "./seo-meta.js";
 
 const toggle = document.querySelector("#toggle");
 const statusLabel = document.querySelector("#status");
@@ -40,7 +41,8 @@ const messages = {
     screenshotTitle: "Screenshot", screenshotSummary: "Select a region, draw arrows and add text",
     screenshotError: "Could not open the screenshot editor on this page. Try another web page.",
     linkTitle: "Link Extractor", linkSummary: "Select a block, filter and copy URLs",
-    linkError: "Could not open the link extractor on this page."
+    linkError: "Could not open the link extractor on this page.",
+    seoSummary: "Inspect SEO on the current page", seoRefresh: "Rescan"
   }
 };
 let state = "loading";
@@ -138,6 +140,7 @@ language.addEventListener("change", () => {
   render();
 });
 render();
+setupSeo(language);
 
 const openScreenshot = document.querySelector("#open-screenshot");
 const screenshotError = document.querySelector("#screenshot-error");

@@ -9,6 +9,7 @@ $zipPath = Join-Path $outputDir "dev-workbench-edge-$($manifest.version).zip"
 $files = @(
     'manifest.json', 'background.js', 'popup.html', 'popup.css', 'popup.js',
     'color-picker.js', 'link-extractor.js', 'json-viewer.js', 'json-viewer.css',
+    'seo-meta.js', 'seo-meta.css',
     'screenshot-overlay.js', 'screenshot.html', 'screenshot.css', 'screenshot.js'
 )
 foreach ($directory in 'icons', '_locales') {

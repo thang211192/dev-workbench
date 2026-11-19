@@ -1,6 +1,6 @@
 <!doctype html>
 <html lang="vi"><head><meta charset="utf-8"><title>Dev Workbench</title>
-<link rel="stylesheet" href="popup.css"><script type="module" src="popup.js"></script></head>
+<link rel="stylesheet" href="popup.css"><link rel="stylesheet" href="seo-meta.css"><script type="module" src="popup.js"></script></head>
 <body>
 <header><img src="icons/icon-48.png" width="32" height="32" alt=""><h1>Dev Workbench</h1>
 <select id="language" aria-label="Ngôn ngữ"><option value="vi" lang="vi">Tiếng Việt</option><option value="en" lang="en">English</option></select></header>
@@ -32,6 +32,11 @@
     <button type="button" class="tool-card" id="open-link-extractor">
       <span class="tool-icon link-icon" aria-hidden="true">↗</span>
       <span class="tool-copy"><strong data-key="linkTitle">Lấy liên kết</strong><small data-key="linkSummary">Chọn khối, lọc và sao chép URL</small></span>
+      <span class="tool-arrow" aria-hidden="true"></span>
+    </button>
+    <button type="button" class="tool-card" data-tool="seo">
+      <span class="tool-icon seo-icon" aria-hidden="true">⌕</span>
+      <span class="tool-copy"><strong>SEO Meta One Click</strong><small data-key="seoSummary">Kiểm tra SEO của trang hiện tại</small></span>
       <span class="tool-arrow" aria-hidden="true"></span>
     </button>
   </div>
@@ -75,5 +80,16 @@
     </div>
   </div>
   <p id="settings-error" data-key="settingsError" role="alert" hidden>Không thể cập nhật cài đặt. Hãy mở lại tiện ích để thử lại.</p>
+</section>
+<section id="seo-view" aria-labelledby="seo-heading" hidden>
+  <div class="seo-hero">
+    <div><h2 id="seo-heading" tabindex="-1">SEO Meta One Click</h2><p id="seo-page" hidden></p></div>
+    <button type="button" id="seo-refresh" data-key="seoRefresh">Quét lại</button>
+  </div>
+  <p id="seo-status" role="status" hidden></p>
+  <div id="seo-report" hidden>
+    <nav id="seo-nav"></nav>
+    <div id="seo-content"></div>
+  </div>
 </section>
 </main></body></html>

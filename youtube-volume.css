@@ -1,0 +1,18 @@
+#movie_player > .dev-workbench-youtube-volume {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 100;
+  pointer-events: none;
+  padding: 10px 18px;
+  border-radius: 10px;
+  background: rgba(0, 0, 0, 0.8);
+  color: white;
+  font: 600 28px/1.2 system-ui, sans-serif;
+  font-variant-numeric: tabular-nums;
+}
+
+#movie_player > .dev-workbench-youtube-volume[hidden] {
+  display: none;
+}

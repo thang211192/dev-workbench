@@ -10,3 +10,4 @@ Read the relevant tool document before changing its behavior. Update that docume
 - [Screenshot](docs/screenshot.md)
 - [Link Extractor](docs/link-extractor.md)
 - [SEO Meta One Click](docs/seo-meta.md)
+- [Âm lượng YouTube](docs/youtube-volume.md)

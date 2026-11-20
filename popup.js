@@ -35,6 +35,10 @@ const messages = {
     switchLabel: "Allow CORS in this tab", languageLabel: "Language",
     settings: "Settings", jsonSetting: "Automatic JSON viewer",
     jsonSettingHelp: "Highlight JSON and collapse nested sections when you open a URL in a tab.",
+    youtubeVolume: "Scroll to adjust YouTube volume",
+    youtubeVolumeHelp: "Hover over the video player and scroll up to raise the volume or down to lower it.",
+    youtubeVolumeStep: "Volume change per notch (%)",
+    youtubeVolumeStepError: "Enter a whole number from 1 to 100.",
     settingsError: "Could not update settings. Reopen the extension to try again.",
     colorSummary: "Pick colors from a web page",
     colorOpenError: "Could not start the color picker on this page. Try another web page.",
@@ -100,6 +104,53 @@ jsonToggle.addEventListener("click", async () => {
   } finally {
     jsonToggle.disabled = false;
   }
+});
+
+const youtubeVolumeToggle = document.querySelector("#youtube-volume-toggle");
+const youtubeVolumeStepInput = document.querySelector("#youtube-volume-step");
+const youtubeVolumeError = document.querySelector("#youtube-volume-error");
+const youtubeVolumeStepError = document.querySelector("#youtube-volume-step-error");
+let savedYoutubeVolumeStep = 5;
+
+chrome.storage.local.get({ youtubeVolumeEnabled: true, youtubeVolumeStep: 5 }).then(settings => {
+  youtubeVolumeToggle.setAttribute("aria-checked", String(settings.youtubeVolumeEnabled));
+  savedYoutubeVolumeStep = settings.youtubeVolumeStep;
+  youtubeVolumeStepInput.value = savedYoutubeVolumeStep;
+  youtubeVolumeToggle.disabled = false;
+  youtubeVolumeStepInput.disabled = false;
+}).catch(() => { youtubeVolumeError.hidden = false; });
+
+async function saveYoutubeVolumeSetting(control, setting, value, renderValue) {
+  control.disabled = true;
+  youtubeVolumeError.hidden = true;
+  try {
+    await chrome.storage.local.set({ [setting]: value });
+    renderValue(value);
+  } catch {
+    youtubeVolumeError.hidden = false;
+    if (control === youtubeVolumeStepInput) control.value = savedYoutubeVolumeStep;
+  } finally {
+    control.disabled = false;
+  }
+}
+
+youtubeVolumeToggle.addEventListener("click", () => {
+  const enabled = youtubeVolumeToggle.getAttribute("aria-checked") !== "true";
+  saveYoutubeVolumeSetting(youtubeVolumeToggle, "youtubeVolumeEnabled", enabled, value => {
+    youtubeVolumeToggle.setAttribute("aria-checked", String(value));
+  });
+});
+
+youtubeVolumeStepInput.addEventListener("change", () => {
+  const step = youtubeVolumeStepInput.valueAsNumber;
+  youtubeVolumeStepError.hidden = Number.isInteger(step) && step >= 1 && step <= 100;
+  if (!youtubeVolumeStepError.hidden) {
+    youtubeVolumeStepInput.value = savedYoutubeVolumeStep;
+    return;
+  }
+  saveYoutubeVolumeSetting(youtubeVolumeStepInput, "youtubeVolumeStep", step, value => {
+    savedYoutubeVolumeStep = value;
+  });
 });
 
 const openColorPicker = document.querySelector("#open-color-picker");

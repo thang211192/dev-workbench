@@ -87,11 +87,11 @@
       </div>
       <button type="button" id="youtube-volume-toggle" class="switch" role="switch" aria-checked="false" aria-labelledby="youtube-volume-label" aria-describedby="youtube-volume-help" disabled></button>
     </div>
-    <div class="setting-row">
+    <div class="setting-row volume-step-row">
       <label for="youtube-volume-step" data-key="youtubeVolumeStep">Mức đổi âm lượng mỗi nấc (%)</label>
-      <input id="youtube-volume-step" type="number" min="1" max="100" step="1" value="5" disabled>
+      <span id="youtube-volume-step-value" aria-hidden="true">5%</span>
+      <input id="youtube-volume-step" type="range" min="1" max="100" step="1" value="5" disabled>
     </div>
-    <p id="youtube-volume-step-error" data-key="youtubeVolumeStepError" role="alert" hidden>Nhập một số nguyên từ 1 đến 100.</p>
     <p id="youtube-volume-error" data-key="settingsError" role="alert" hidden>Không thể cập nhật cài đặt. Hãy mở lại tiện ích để thử lại.</p>
   </section>
   <section class="panel" aria-labelledby="facebook-reels-label">

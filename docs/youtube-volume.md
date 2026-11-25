@@ -1,6 +1,6 @@
 # Cuộn để chỉnh âm lượng YouTube
 
-Trong **Cài đặt** của Dev Workbench, khung **Cuộn để chỉnh âm lượng YouTube** chứa công tắc và ô **Mức đổi âm lượng mỗi nấc (%)**. Công tắc mặc định bật. Mỗi nấc cuộn mặc định đổi 5 điểm phần trăm và có thể đặt từ 1 đến 100. Tiện ích lưu cả hai cài đặt cục bộ và áp dụng thay đổi trên các tab YouTube đang mở.
+Trong **Cài đặt** của Dev Workbench, khung **Cuộn để chỉnh âm lượng YouTube** chứa công tắc và thanh kéo **Mức đổi âm lượng mỗi nấc (%)**. Giá trị hiển thị thay đổi khi kéo hoặc dùng phím mũi tên. Công tắc mặc định bật. Mỗi nấc cuộn mặc định đổi 5 điểm phần trăm và có thể đặt từ 1 đến 100. Tiện ích lưu cả hai cài đặt cục bộ và áp dụng thay đổi trên các tab YouTube đang mở.
 
 Trên trang xem video YouTube, rê chuột lên trình phát rồi cuộn lên để tăng hoặc cuộn xuống để giảm âm lượng. Âm lượng nằm trong khoảng 0–100%. Khi video đang tắt tiếng, cuộn lên bật tiếng từ mức âm lượng 0%. Cuộn bên ngoài trình phát vẫn cuộn trang.
 

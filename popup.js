@@ -38,7 +38,6 @@ const messages = {
     youtubeVolume: "Scroll to adjust YouTube volume",
     youtubeVolumeHelp: "Hover over the video player and scroll up to raise the volume or down to lower it.",
     youtubeVolumeStep: "Volume change per scroll notch (%)",
-    youtubeVolumeStepError: "Enter a whole number from 1 to 100.",
     facebookReels: "Auto-advance Facebook Reels",
     facebookReelsHelp: "Go to the next Reel when playback ends or Facebook marks the current Reel as sponsored.",
     settingsError: "Could not update settings. Reopen the extension to try again.",
@@ -110,48 +109,53 @@ jsonToggle.addEventListener("click", async () => {
 
 const youtubeVolumeToggle = document.querySelector("#youtube-volume-toggle");
 const youtubeVolumeStepInput = document.querySelector("#youtube-volume-step");
+const youtubeVolumeStepValue = document.querySelector("#youtube-volume-step-value");
 const youtubeVolumeError = document.querySelector("#youtube-volume-error");
-const youtubeVolumeStepError = document.querySelector("#youtube-volume-step-error");
 let savedYoutubeVolumeStep = 5;
+let youtubeVolumeStepWrite = Promise.resolve();
+
+function renderYoutubeVolumeStep() {
+  youtubeVolumeStepValue.textContent = youtubeVolumeStepInput.value + "%";
+}
 
 chrome.storage.local.get({ youtubeVolumeEnabled: true, youtubeVolumeStep: 5 }).then(settings => {
   youtubeVolumeToggle.setAttribute("aria-checked", String(settings.youtubeVolumeEnabled));
   savedYoutubeVolumeStep = settings.youtubeVolumeStep;
   youtubeVolumeStepInput.value = savedYoutubeVolumeStep;
+  renderYoutubeVolumeStep();
   youtubeVolumeToggle.disabled = false;
   youtubeVolumeStepInput.disabled = false;
 }).catch(() => { youtubeVolumeError.hidden = false; });
 
-async function saveYoutubeVolumeSetting(control, setting, value, renderValue) {
-  control.disabled = true;
+youtubeVolumeToggle.addEventListener("click", async () => {
+  const enabled = youtubeVolumeToggle.getAttribute("aria-checked") !== "true";
+  youtubeVolumeToggle.disabled = true;
   youtubeVolumeError.hidden = true;
   try {
-    await chrome.storage.local.set({ [setting]: value });
-    renderValue(value);
+    await chrome.storage.local.set({ youtubeVolumeEnabled: enabled });
+    youtubeVolumeToggle.setAttribute("aria-checked", String(enabled));
   } catch {
     youtubeVolumeError.hidden = false;
-    if (control === youtubeVolumeStepInput) control.value = savedYoutubeVolumeStep;
   } finally {
-    control.disabled = false;
+    youtubeVolumeToggle.disabled = false;
   }
-}
-
-youtubeVolumeToggle.addEventListener("click", () => {
-  const enabled = youtubeVolumeToggle.getAttribute("aria-checked") !== "true";
-  saveYoutubeVolumeSetting(youtubeVolumeToggle, "youtubeVolumeEnabled", enabled, value => {
-    youtubeVolumeToggle.setAttribute("aria-checked", String(value));
-  });
 });
 
+youtubeVolumeStepInput.addEventListener("input", renderYoutubeVolumeStep);
 youtubeVolumeStepInput.addEventListener("change", () => {
   const step = youtubeVolumeStepInput.valueAsNumber;
-  youtubeVolumeStepError.hidden = Number.isInteger(step) && step >= 1 && step <= 100;
-  if (!youtubeVolumeStepError.hidden) {
-    youtubeVolumeStepInput.value = savedYoutubeVolumeStep;
-    return;
-  }
-  saveYoutubeVolumeSetting(youtubeVolumeStepInput, "youtubeVolumeStep", step, value => {
-    savedYoutubeVolumeStep = value;
+  youtubeVolumeStepWrite = youtubeVolumeStepWrite.then(async () => {
+    youtubeVolumeError.hidden = true;
+    try {
+      await chrome.storage.local.set({ youtubeVolumeStep: step });
+      savedYoutubeVolumeStep = step;
+    } catch {
+      youtubeVolumeError.hidden = false;
+      if (youtubeVolumeStepInput.valueAsNumber === step) {
+        youtubeVolumeStepInput.value = savedYoutubeVolumeStep;
+        renderYoutubeVolumeStep();
+      }
+    }
   });
 });
 

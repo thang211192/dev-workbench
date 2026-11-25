@@ -177,8 +177,16 @@ function formatMinutes(value) {
   return new Intl.NumberFormat(language.value, { style: "unit", unit: "minute" }).format(value);
 }
 
+function formatDuration(value) {
+  if (value < 60) return formatMinutes(value);
+  const hours = new Intl.NumberFormat(language.value, { style: "unit", unit: "hour" })
+    .format(Math.floor(value / 60));
+  const minutes = value % 60;
+  return minutes ? hours + " " + formatMinutes(minutes) : hours;
+}
+
 setupRangeSetting("facebook-max-duration", "facebookReelsMaxDurationMinutes",
-  document.getElementById("facebook-max-duration-error"), formatMinutes);
+  document.getElementById("facebook-max-duration-error"), formatDuration);
 setupRangeSetting("tiktok-max-duration", "tiktokMaxDurationMinutes",
   document.getElementById("tiktok-max-duration-error"), formatMinutes);
 

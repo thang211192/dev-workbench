@@ -1,19 +1,25 @@
 (() => {
   const setting = "facebookReelsEnabled";
   const durationSetting = "facebookReelsMaxDurationMinutes";
-  const defaultMaxMinutes = 15;
+  const backgroundTargetKey = "devWorkbenchReelsBackgroundTarget";
+  const defaultMaxMinutes = 60;
   const nextLabels = new Set(["next reel", "next video", "reel tiếp theo", "video tiếp theo"]);
+  const nextCardLabels = new Set(["next card", "thẻ tiếp theo"]);
   const sponsoredLabels = new Set(["sponsored", "được tài trợ", "được quảng cáo"]);
   let enabled = false;
   let maxMinutes = defaultMaxMinutes;
   let active;
   let lastUserInput = -Infinity;
   let pendingCheck = 0;
+  let playingAtBlur;
+  let continueInBackground = false;
   const observer = new MutationObserver(scheduleCheck);
 
   function updateEnabled(value) {
     enabled = value !== false;
     active = undefined;
+    playingAtBlur = undefined;
+    continueInBackground = false;
     observer.disconnect();
     if (enabled) {
       observer.observe(document.documentElement, {
@@ -36,6 +42,9 @@
     .then(settings => {
       maxMinutes = settings[durationSetting];
       updateEnabled(settings[setting]);
+      continueInBackground = enabled && document.hidden &&
+        sessionStorage.getItem(backgroundTargetKey) === location.pathname;
+      sessionStorage.removeItem(backgroundTargetKey);
     })
     .catch(() => {});
 
@@ -44,7 +53,7 @@
   }
 
   function canAdvance() {
-    return enabled && isReelsPage() && !document.hidden;
+    return enabled && isReelsPage();
   }
 
   function isVisible(element) {
@@ -75,9 +84,11 @@
   }
 
   function advance(video) {
+    const card = reelCard(video);
     for (const button of document.querySelectorAll("button, [role='button']")) {
       const label = (button.getAttribute("aria-label") || button.title || "").trim().toLowerCase();
-      if (nextLabels.has(label) && !button.disabled &&
+      const isNext = nextLabels.has(label) || (nextCardLabels.has(label) && card?.contains(button));
+      if (isNext && !button.disabled &&
           button.getAttribute("aria-disabled") !== "true" && isVisible(button)) {
         button.click();
         return true;
@@ -85,19 +96,27 @@
     }
 
     const rect = video.getBoundingClientRect();
-    let next;
-    let nextTop = Infinity;
+    const candidates = [];
     for (const candidate of document.querySelectorAll("video")) {
       const bounds = candidate.getBoundingClientRect();
       if (bounds.height > 0 && bounds.top >= rect.bottom &&
-          bounds.left < rect.right && bounds.right > rect.left && bounds.top < nextTop &&
+          bounds.left < rect.right && bounds.right > rect.left &&
           getComputedStyle(candidate).visibility === "visible") {
-        next = candidate;
-        nextTop = bounds.top;
+        candidates.push({ video: candidate, top: bounds.top });
+      }
+    }
+    candidates.sort((a, b) => a.top - b.top);
+    let next = candidates[0]?.video;
+    if (document.hidden && next) {
+      // Read sponsorship in the feed before a standalone Reel loses its ad label.
+      const playable = candidates.find(candidate => !isSponsored(reelCard(candidate.video)));
+      if (playable) {
+        next = playable.video;
+        if (openNextReel(next)) return true;
       }
     }
     if (next) {
-      next.scrollIntoView({ block: "center", inline: "nearest" });
+      next.scrollIntoView({ block: "center", inline: "nearest", behavior: "instant" });
       return true;
     }
 
@@ -128,12 +147,37 @@
     return card;
   }
 
+  function openNextReel(video) {
+    const card = reelCard(video);
+    if (!card) return false;
+    const paths = new Set();
+    for (const link of card.querySelectorAll("a[href*='/reel/']")) {
+      const url = new URL(link.href);
+      if (url.origin === location.origin && /^\/reel\/\d+\/?$/.test(url.pathname)) {
+        paths.add(url.pathname.replace(/\/$/, ""));
+      }
+    }
+    if (paths.size !== 1) return false;
+    const [path] = paths;
+    if (path === location.pathname.replace(/\/$/, "")) return false;
+    try {
+      if (continueInBackground) sessionStorage.setItem(backgroundTargetKey, path);
+    } catch {
+      return false;
+    }
+    location.assign(path);
+    return true;
+  }
+
   function isSponsored(card) {
     if (!card) return false;
     for (const label of card.querySelectorAll("span, a, [aria-label]")) {
       const aria = label.getAttribute("aria-label")?.trim().toLowerCase();
       const text = label.textContent.trim().toLowerCase();
-      if ((sponsoredLabels.has(aria) || sponsoredLabels.has(text)) && isVisible(label)) return true;
+      if (!sponsoredLabels.has(aria) && !sponsoredLabels.has(text)) continue;
+      if (document.hidden ? !label.closest("[hidden], [aria-hidden='true']") : isVisible(label)) {
+        return true;
+      }
     }
     return false;
   }
@@ -163,7 +207,8 @@
 
   function scheduleCheck() {
     if (pendingCheck || !canAdvance()) return;
-    pendingCheck = requestAnimationFrame(() => {
+    // Animation frames stop when the browser hides the tab.
+    pendingCheck = setTimeout(() => {
       pendingCheck = 0;
       if (!canAdvance()) return;
       const video = currentVideo();
@@ -171,8 +216,17 @@
       track(video);
       if (active.advanced) return;
       const card = reelCard(video);
-      if (exceedsDuration(video, card) || isSponsored(card)) advanceOnce(video);
-    });
+      if (exceedsDuration(video, card) || isSponsored(card)) {
+        advanceOnce(video);
+        return;
+      }
+      if (document.hidden && continueInBackground && video.paused &&
+          !video.ended && video.readyState >= HTMLMediaElement.HAVE_CURRENT_DATA &&
+          !active.backgroundPlayAttempted) {
+        active.backgroundPlayAttempted = true;
+        video.play().catch(() => {});
+      }
+    }, 0);
   }
 
   function onPlayback(event) {
@@ -186,29 +240,54 @@
     track(video);
     if (active.advanced) return;
     scheduleCheck();
+    if (event.type === "ended") {
+      advanceOnce(video);
+      return;
+    }
     if (!Number.isFinite(video.duration) || video.duration <= 0) return;
 
+    const now = performance.now();
     const time = video.currentTime;
     const edge = Math.min(0.5, video.duration / 4);
+    const wentBack = time < active.time;
+    const userSeeking = now - lastUserInput < 750 ||
+      (document.hidden && lastUserInput >= active.sampledAt);
+    const elapsed = (now - (active.sampledAt ?? now)) / 1000 * video.playbackRate;
+    const crossedEnd = active.time + elapsed >= video.duration + time - edge;
+    const nearBoundary = active.time >= video.duration - edge && time <= edge;
+    const backgroundLoop = document.hidden && ((video.loop && time <= edge) || crossedEnd);
+    const restarted = !video.paused && wentBack && !userSeeking && (nearBoundary || backgroundLoop);
+    if (restarted) {
+      advanceOnce(video);
+      return;
+    }
+
     if (event.type === "seeking") {
-      // A looping player can seek to the start before the next timeupdate.
-      if (time > edge || active.time < video.duration - edge ||
-          performance.now() - lastUserInput < 750) active.time = 0;
+      active.time = 0;
+      active.sampledAt = undefined;
       return;
     }
     if (video.seeking) return;
 
-    const restarted = !video.paused && active.time >= video.duration - edge && time <= edge;
     active.time = time;
-    if (event.type === "ended" || restarted) advanceOnce(video);
+    active.sampledAt = now;
   }
 
-  document.addEventListener("visibilitychange", () => {
-    if (active) active.time = 0;
+  window.addEventListener("blur", () => {
+    if (!canAdvance() || document.hidden) return;
+    const video = currentVideo();
+    playingAtBlur = video && !video.paused && !video.ended ? video : undefined;
+  }, true);
+
+  window.addEventListener("visibilitychange", () => {
+    const video = canAdvance() && document.hidden ? currentVideo() : undefined;
+    continueInBackground = Boolean(video && !video.ended && (!video.paused || video === playingAtBlur));
+    playingAtBlur = undefined;
+    if (!document.hidden && active) active.backgroundPlayAttempted = false;
     scheduleCheck();
-  });
+  }, true);
   document.addEventListener("scroll", scheduleCheck, { capture: true, passive: true });
-  for (const type of ["loadedmetadata", "durationchange"]) {
+  for (const type of ["loadedmetadata", "durationchange", "canplay", "pause"]) {
     document.addEventListener(type, scheduleCheck, true);
   }
   for (const type of ["pointerdown", "pointerup", "keydown"]) {

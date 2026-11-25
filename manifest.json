@@ -16,6 +16,10 @@
   ],
   "content_scripts": [
     {
+      "matches": ["https://www.facebook.com/*"],
+      "js": ["facebook-reels.js"]
+    },
+    {
       "matches": ["http://*/*", "https://*/*"],
       "js": ["json-viewer.js"],
       "css": ["json-viewer.css"]

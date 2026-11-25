@@ -79,21 +79,31 @@
       <button type="button" id="json-toggle" class="switch" role="switch" aria-checked="false" aria-labelledby="json-setting-label" aria-describedby="json-setting-help" disabled></button>
     </div>
   </div>
-  <div class="panel">
+  <section class="panel" aria-labelledby="youtube-volume-label">
     <div class="setting-row">
       <div>
-        <strong id="youtube-volume-label" data-key="youtubeVolume">Cuộn để chỉnh âm lượng YouTube</strong>
+        <h3 id="youtube-volume-label" data-key="youtubeVolume">Cuộn để chỉnh âm lượng YouTube</h3>
         <p id="youtube-volume-help" data-key="youtubeVolumeHelp">Rê chuột lên khung video rồi cuộn lên để tăng hoặc cuộn xuống để giảm âm lượng.</p>
       </div>
       <button type="button" id="youtube-volume-toggle" class="switch" role="switch" aria-checked="false" aria-labelledby="youtube-volume-label" aria-describedby="youtube-volume-help" disabled></button>
     </div>
     <div class="setting-row">
-      <label for="youtube-volume-step" data-key="youtubeVolumeStep">Mức đổi mỗi nấc (%)</label>
+      <label for="youtube-volume-step" data-key="youtubeVolumeStep">Mức đổi âm lượng mỗi nấc (%)</label>
       <input id="youtube-volume-step" type="number" min="1" max="100" step="1" value="5" disabled>
     </div>
     <p id="youtube-volume-step-error" data-key="youtubeVolumeStepError" role="alert" hidden>Nhập một số nguyên từ 1 đến 100.</p>
     <p id="youtube-volume-error" data-key="settingsError" role="alert" hidden>Không thể cập nhật cài đặt. Hãy mở lại tiện ích để thử lại.</p>
-  </div>
+  </section>
+  <section class="panel" aria-labelledby="facebook-reels-label">
+    <div class="setting-row">
+      <div>
+        <h3 id="facebook-reels-label" data-key="facebookReels">Tự chuyển Facebook Reels</h3>
+        <p id="facebook-reels-help" data-key="facebookReelsHelp">Chuyển sang Reel tiếp theo khi video phát hết hoặc khi Facebook gắn nhãn tài trợ cho Reel đang xem.</p>
+      </div>
+      <button type="button" id="facebook-reels-toggle" class="switch" role="switch" aria-checked="false" aria-labelledby="facebook-reels-label" aria-describedby="facebook-reels-help" disabled></button>
+    </div>
+    <p id="facebook-reels-error" data-key="settingsError" role="alert" hidden>Không thể cập nhật cài đặt. Hãy mở lại tiện ích để thử lại.</p>
+  </section>
   <p id="settings-error" data-key="settingsError" role="alert" hidden>Không thể cập nhật cài đặt. Hãy mở lại tiện ích để thử lại.</p>
 </section>
 <section id="seo-view" aria-labelledby="seo-heading" hidden>

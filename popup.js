@@ -37,8 +37,10 @@ const messages = {
     jsonSettingHelp: "Highlight JSON and collapse nested sections when you open a URL in a tab.",
     youtubeVolume: "Scroll to adjust YouTube volume",
     youtubeVolumeHelp: "Hover over the video player and scroll up to raise the volume or down to lower it.",
-    youtubeVolumeStep: "Volume change per notch (%)",
+    youtubeVolumeStep: "Volume change per scroll notch (%)",
     youtubeVolumeStepError: "Enter a whole number from 1 to 100.",
+    facebookReels: "Auto-advance Facebook Reels",
+    facebookReelsHelp: "Go to the next Reel when playback ends or Facebook marks the current Reel as sponsored.",
     settingsError: "Could not update settings. Reopen the extension to try again.",
     colorSummary: "Pick colors from a web page",
     colorOpenError: "Could not start the color picker on this page. Try another web page.",
@@ -151,6 +153,28 @@ youtubeVolumeStepInput.addEventListener("change", () => {
   saveYoutubeVolumeSetting(youtubeVolumeStepInput, "youtubeVolumeStep", step, value => {
     savedYoutubeVolumeStep = value;
   });
+});
+
+const facebookReelsToggle = document.querySelector("#facebook-reels-toggle");
+const facebookReelsError = document.querySelector("#facebook-reels-error");
+
+chrome.storage.local.get({ facebookReelsEnabled: true }).then(({ facebookReelsEnabled }) => {
+  facebookReelsToggle.setAttribute("aria-checked", String(facebookReelsEnabled !== false));
+  facebookReelsToggle.disabled = false;
+}).catch(() => { facebookReelsError.hidden = false; });
+
+facebookReelsToggle.addEventListener("click", async () => {
+  const enabled = facebookReelsToggle.getAttribute("aria-checked") !== "true";
+  facebookReelsToggle.disabled = true;
+  facebookReelsError.hidden = true;
+  try {
+    await chrome.storage.local.set({ facebookReelsEnabled: enabled });
+    facebookReelsToggle.setAttribute("aria-checked", String(enabled));
+  } catch {
+    facebookReelsError.hidden = false;
+  } finally {
+    facebookReelsToggle.disabled = false;
+  }
 });
 
 const openColorPicker = document.querySelector("#open-color-picker");

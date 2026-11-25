@@ -29,6 +29,7 @@ main h2 { font-size: 17px; margin: 0 0 10px; }
 #settings-view .panel + .panel { margin-top: 10px; }
 #youtube-volume-step { width: 5em; }
 .setting-row p { font-size: 13px; }
+.setting-row h3 { margin: 0; font-size: inherit; }
 #settings-error { color: var(--workbench-error); }
 .tool-card { display: flex; align-items: center; gap: 10px; width: 100%; min-height: 66px; padding: 10px; border: 1px solid var(--workbench-border); border-radius: 12px; background: white; color: inherit; text-align: left; font: inherit; cursor: pointer; }
 .tool-card:hover { background: var(--workbench-hover); border-color: #bd96e5; }

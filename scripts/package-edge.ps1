@@ -11,6 +11,7 @@ $files = @(
     'color-picker.js', 'link-extractor.js', 'json-viewer.js', 'json-viewer.css',
     'seo-meta.js', 'seo-meta.css',
     'youtube-volume.js', 'youtube-volume.css', 'youtube-volume-player.js',
+    'facebook-reels.js',
     'screenshot-overlay.js', 'screenshot.html', 'screenshot.css', 'screenshot.js'
 )
 foreach ($directory in 'icons', '_locales') {

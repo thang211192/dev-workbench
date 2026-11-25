@@ -27,9 +27,9 @@ main h2 { font-size: 17px; margin: 0 0 10px; }
 .setting-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
 .setting-row + .setting-row { padding-top: 12px; margin-top: 12px; border-top: 1px solid var(--workbench-border); }
 #settings-view .panel + .panel { margin-top: 10px; }
-.volume-step-row { display: grid; grid-template-columns: 1fr auto; gap: 6px 12px; }
-#youtube-volume-step { grid-column: 1 / -1; width: 100%; margin: 0; accent-color: var(--workbench-accent); }
-#youtube-volume-step-value { font-weight: 600; font-variant-numeric: tabular-nums; }
+.range-setting { display: grid; grid-template-columns: 1fr auto; gap: 6px 12px; }
+.range-setting input { grid-column: 1 / -1; width: 100%; margin: 0; accent-color: var(--workbench-accent); }
+.range-setting span { font-weight: 600; font-variant-numeric: tabular-nums; }
 .setting-row p { font-size: 13px; }
 .setting-row h3 { margin: 0; font-size: inherit; }
 #settings-error { color: var(--workbench-error); }

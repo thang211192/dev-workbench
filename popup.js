@@ -40,6 +40,9 @@ const messages = {
     youtubeVolumeStep: "Volume change per scroll notch (%)",
     facebookReels: "Auto-advance Facebook Reels",
     facebookReelsHelp: "Go to the next Reel when playback ends or Facebook marks the current Reel as sponsored.",
+    tiktokAutoScroll: "Auto-scroll TikTok",
+    tiktokAutoScrollHelp: "Advance when a video ends and skip LIVE posts or videos over the duration limit.",
+    tiktokMaxDuration: "Maximum video duration",
     settingsError: "Could not update settings. Reopen the extension to try again.",
     colorSummary: "Pick colors from a web page",
     colorOpenError: "Could not start the color picker on this page. Try another web page.",
@@ -108,23 +111,11 @@ jsonToggle.addEventListener("click", async () => {
 });
 
 const youtubeVolumeToggle = document.querySelector("#youtube-volume-toggle");
-const youtubeVolumeStepInput = document.querySelector("#youtube-volume-step");
-const youtubeVolumeStepValue = document.querySelector("#youtube-volume-step-value");
 const youtubeVolumeError = document.querySelector("#youtube-volume-error");
-let savedYoutubeVolumeStep = 5;
-let youtubeVolumeStepWrite = Promise.resolve();
 
-function renderYoutubeVolumeStep() {
-  youtubeVolumeStepValue.textContent = youtubeVolumeStepInput.value + "%";
-}
-
-chrome.storage.local.get({ youtubeVolumeEnabled: true, youtubeVolumeStep: 5 }).then(settings => {
+chrome.storage.local.get({ youtubeVolumeEnabled: true }).then(settings => {
   youtubeVolumeToggle.setAttribute("aria-checked", String(settings.youtubeVolumeEnabled));
-  savedYoutubeVolumeStep = settings.youtubeVolumeStep;
-  youtubeVolumeStepInput.value = savedYoutubeVolumeStep;
-  renderYoutubeVolumeStep();
   youtubeVolumeToggle.disabled = false;
-  youtubeVolumeStepInput.disabled = false;
 }).catch(() => { youtubeVolumeError.hidden = false; });
 
 youtubeVolumeToggle.addEventListener("click", async () => {
@@ -141,45 +132,76 @@ youtubeVolumeToggle.addEventListener("click", async () => {
   }
 });
 
-youtubeVolumeStepInput.addEventListener("input", renderYoutubeVolumeStep);
-youtubeVolumeStepInput.addEventListener("change", () => {
-  const step = youtubeVolumeStepInput.valueAsNumber;
-  youtubeVolumeStepWrite = youtubeVolumeStepWrite.then(async () => {
-    youtubeVolumeError.hidden = true;
-    try {
-      await chrome.storage.local.set({ youtubeVolumeStep: step });
-      savedYoutubeVolumeStep = step;
-    } catch {
-      youtubeVolumeError.hidden = false;
-      if (youtubeVolumeStepInput.valueAsNumber === step) {
-        youtubeVolumeStepInput.value = savedYoutubeVolumeStep;
-        renderYoutubeVolumeStep();
+function setupRangeSetting(id, setting, error, formatValue) {
+  const control = document.getElementById(id);
+  const display = document.getElementById(id + "-value");
+  let savedValue = control.valueAsNumber;
+  let pendingWrite = Promise.resolve();
+
+  function renderValue() {
+    const value = formatValue(control.valueAsNumber);
+    display.textContent = value;
+    control.setAttribute("aria-valuetext", value);
+  }
+
+  chrome.storage.local.get({ [setting]: savedValue }).then(settings => {
+    control.value = settings[setting];
+    savedValue = control.valueAsNumber;
+    renderValue();
+    control.disabled = false;
+  }).catch(() => { error.hidden = false; });
+
+  renderValue();
+  language.addEventListener("change", renderValue);
+  control.addEventListener("input", renderValue);
+  control.addEventListener("change", () => {
+    const value = control.valueAsNumber;
+    pendingWrite = pendingWrite.then(async () => {
+      error.hidden = true;
+      try {
+        await chrome.storage.local.set({ [setting]: value });
+        savedValue = value;
+      } catch {
+        error.hidden = false;
+        if (control.valueAsNumber === value) {
+          control.value = savedValue;
+          renderValue();
+        }
       }
+    });
+  });
+}
+
+setupRangeSetting("youtube-volume-step", "youtubeVolumeStep", youtubeVolumeError, value => value + "%");
+setupRangeSetting("tiktok-max-duration", "tiktokMaxDurationMinutes",
+  document.getElementById("tiktok-max-duration-error"),
+  value => new Intl.NumberFormat(language.value, { style: "unit", unit: "minute" }).format(value));
+
+function setupAutoScrollToggle(id, setting) {
+  const control = document.getElementById(id + "-toggle");
+  const error = document.getElementById(id + "-error");
+  chrome.storage.local.get({ [setting]: true }).then(settings => {
+    control.setAttribute("aria-checked", String(settings[setting] !== false));
+    control.disabled = false;
+  }).catch(() => { error.hidden = false; });
+
+  control.addEventListener("click", async () => {
+    const enabled = control.getAttribute("aria-checked") !== "true";
+    control.disabled = true;
+    error.hidden = true;
+    try {
+      await chrome.storage.local.set({ [setting]: enabled });
+      control.setAttribute("aria-checked", String(enabled));
+    } catch {
+      error.hidden = false;
+    } finally {
+      control.disabled = false;
     }
   });
-});
+}
 
-const facebookReelsToggle = document.querySelector("#facebook-reels-toggle");
-const facebookReelsError = document.querySelector("#facebook-reels-error");
-
-chrome.storage.local.get({ facebookReelsEnabled: true }).then(({ facebookReelsEnabled }) => {
-  facebookReelsToggle.setAttribute("aria-checked", String(facebookReelsEnabled !== false));
-  facebookReelsToggle.disabled = false;
-}).catch(() => { facebookReelsError.hidden = false; });
-
-facebookReelsToggle.addEventListener("click", async () => {
-  const enabled = facebookReelsToggle.getAttribute("aria-checked") !== "true";
-  facebookReelsToggle.disabled = true;
-  facebookReelsError.hidden = true;
-  try {
-    await chrome.storage.local.set({ facebookReelsEnabled: enabled });
-    facebookReelsToggle.setAttribute("aria-checked", String(enabled));
-  } catch {
-    facebookReelsError.hidden = false;
-  } finally {
-    facebookReelsToggle.disabled = false;
-  }
-});
+setupAutoScrollToggle("facebook-reels", "facebookReelsEnabled");
+setupAutoScrollToggle("tiktok-auto-scroll", "tiktokAutoScrollEnabled");
 
 const openColorPicker = document.querySelector("#open-color-picker");
 const colorOpenError = document.querySelector("#color-open-error");

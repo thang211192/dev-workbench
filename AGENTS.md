@@ -12,3 +12,4 @@ Read the relevant tool document before changing its behavior. Update that docume
 - [SEO Meta One Click](docs/seo-meta.md)
 - [Âm lượng YouTube](docs/youtube-volume.md)
 - [Tự chuyển Facebook Reels](docs/facebook-reels.md)
+- [Tự cuộn TikTok](docs/tiktok-auto-scroll.md)

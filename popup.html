@@ -98,11 +98,17 @@
     <div class="setting-row">
       <div>
         <h3 id="facebook-reels-label" data-key="facebookReels">Tự chuyển Facebook Reels</h3>
-        <p id="facebook-reels-help" data-key="facebookReelsHelp">Chuyển sang Reel tiếp theo khi video phát hết hoặc khi Facebook gắn nhãn tài trợ cho Reel đang xem.</p>
+        <p id="facebook-reels-help" data-key="facebookReelsHelp">Chuyển khi Reel phát hết, bỏ qua Reel được tài trợ và video vượt giới hạn thời lượng.</p>
       </div>
       <button type="button" id="facebook-reels-toggle" class="switch" role="switch" aria-checked="false" aria-labelledby="facebook-reels-label" aria-describedby="facebook-reels-help" disabled></button>
     </div>
+    <div class="setting-row range-setting">
+      <label for="facebook-max-duration" data-key="maxVideoDuration">Thời lượng video tối đa</label>
+      <span id="facebook-max-duration-value" aria-hidden="true">15 phút</span>
+      <input id="facebook-max-duration" type="range" min="1" max="60" step="1" value="15" disabled>
+    </div>
     <p id="facebook-reels-error" data-key="settingsError" role="alert" hidden>Không thể cập nhật cài đặt. Hãy mở lại tiện ích để thử lại.</p>
+    <p id="facebook-max-duration-error" data-key="settingsError" role="alert" hidden>Không thể cập nhật cài đặt. Hãy mở lại tiện ích để thử lại.</p>
   </section>
   <section class="panel" aria-labelledby="tiktok-auto-scroll-label">
     <div class="setting-row">
@@ -113,7 +119,7 @@
       <button type="button" id="tiktok-auto-scroll-toggle" class="switch" role="switch" aria-checked="false" aria-labelledby="tiktok-auto-scroll-label" aria-describedby="tiktok-auto-scroll-help" disabled></button>
     </div>
     <div class="setting-row range-setting">
-      <label for="tiktok-max-duration" data-key="tiktokMaxDuration">Thời lượng video tối đa</label>
+      <label for="tiktok-max-duration" data-key="maxVideoDuration">Thời lượng video tối đa</label>
       <span id="tiktok-max-duration-value" aria-hidden="true">15 phút</span>
       <input id="tiktok-max-duration" type="range" min="1" max="60" step="1" value="15" disabled>
     </div>

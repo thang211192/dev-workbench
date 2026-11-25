@@ -39,10 +39,10 @@ const messages = {
     youtubeVolumeHelp: "Hover over the video player and scroll up to raise the volume or down to lower it.",
     youtubeVolumeStep: "Volume change per scroll notch (%)",
     facebookReels: "Auto-advance Facebook Reels",
-    facebookReelsHelp: "Go to the next Reel when playback ends or Facebook marks the current Reel as sponsored.",
+    facebookReelsHelp: "Advance when a Reel ends and skip sponsored Reels or videos over the duration limit.",
     tiktokAutoScroll: "Auto-scroll TikTok",
     tiktokAutoScrollHelp: "Advance when a video ends and skip LIVE posts or videos over the duration limit.",
-    tiktokMaxDuration: "Maximum video duration",
+    maxVideoDuration: "Maximum video duration",
     settingsError: "Could not update settings. Reopen the extension to try again.",
     colorSummary: "Pick colors from a web page",
     colorOpenError: "Could not start the color picker on this page. Try another web page.",
@@ -173,9 +173,14 @@ function setupRangeSetting(id, setting, error, formatValue) {
 }
 
 setupRangeSetting("youtube-volume-step", "youtubeVolumeStep", youtubeVolumeError, value => value + "%");
+function formatMinutes(value) {
+  return new Intl.NumberFormat(language.value, { style: "unit", unit: "minute" }).format(value);
+}
+
+setupRangeSetting("facebook-max-duration", "facebookReelsMaxDurationMinutes",
+  document.getElementById("facebook-max-duration-error"), formatMinutes);
 setupRangeSetting("tiktok-max-duration", "tiktokMaxDurationMinutes",
-  document.getElementById("tiktok-max-duration-error"),
-  value => new Intl.NumberFormat(language.value, { style: "unit", unit: "minute" }).format(value));
+  document.getElementById("tiktok-max-duration-error"), formatMinutes);
 
 function setupAutoScrollToggle(id, setting) {
   const control = document.getElementById(id + "-toggle");

@@ -3,6 +3,8 @@
   const durationSetting = "facebookReelsMaxDurationMinutes";
   const backgroundTargetKey = "devWorkbenchReelsBackgroundTarget";
   const defaultMaxMinutes = 60;
+  const retryDelay = 3000;
+  const maxAttempts = 3;
   const nextLabels = new Set(["next reel", "next video", "reel tiếp theo", "video tiếp theo"]);
   const nextCardLabels = new Set(["next card", "thẻ tiếp theo"]);
   const sponsoredLabels = new Set(["sponsored", "được tài trợ", "được quảng cáo"]);
@@ -13,6 +15,7 @@
   let pendingCheck = 0;
   let playingAtBlur;
   let continueInBackground = false;
+  let watchdog = 0;
   const observer = new MutationObserver(scheduleCheck);
 
   function updateEnabled(value) {
@@ -27,6 +30,22 @@
         attributes: true, attributeFilter: ["aria-label", "aria-valuetext"]
       });
       scheduleCheck();
+    }
+    updateWatchdog();
+  }
+
+  function normalizedPath(path) {
+    return path.replace(/\/$/, "");
+  }
+
+  function updateWatchdog() {
+    // Hidden tabs may not deliver media or DOM events after a stalled transition.
+    const run = enabled && continueInBackground && document.hidden;
+    if (run && !watchdog) {
+      watchdog = setInterval(scheduleCheck, 1000);
+    } else if (!run && watchdog) {
+      clearInterval(watchdog);
+      watchdog = 0;
     }
   }
 
@@ -43,8 +62,9 @@
       maxMinutes = settings[durationSetting];
       updateEnabled(settings[setting]);
       continueInBackground = enabled && document.hidden &&
-        sessionStorage.getItem(backgroundTargetKey) === location.pathname;
+        sessionStorage.getItem(backgroundTargetKey) === normalizedPath(location.pathname);
       sessionStorage.removeItem(backgroundTargetKey);
+      updateWatchdog();
     })
     .catch(() => {});
 
@@ -83,9 +103,10 @@
     return closest;
   }
 
-  function advance(video) {
+  function advance(video, retry) {
     const card = reelCard(video);
-    for (const button of document.querySelectorAll("button, [role='button']")) {
+    // A retry skips the button because Facebook may wait to render before it moves.
+    for (const button of retry ? [] : document.querySelectorAll("button, [role='button']")) {
       const label = (button.getAttribute("aria-label") || button.title || "").trim().toLowerCase();
       const isNext = nextLabels.has(label) || (nextCardLabels.has(label) && card?.contains(button));
       if (isNext && !button.disabled &&
@@ -133,7 +154,10 @@
 
   function track(video) {
     if (active?.video !== video || active.path !== location.pathname || active.source !== video.currentSrc) {
-      active = { video, path: location.pathname, source: video.currentSrc, time: 0, advanced: false };
+      active = {
+        video, path: location.pathname, source: video.currentSrc, time: 0,
+        advanced: false, attempts: 0, playAttempts: 0, playAttemptAt: -Infinity
+      };
     }
   }
 
@@ -159,7 +183,7 @@
     }
     if (paths.size !== 1) return false;
     const [path] = paths;
-    if (path === location.pathname.replace(/\/$/, "")) return false;
+    if (path === normalizedPath(location.pathname)) return false;
     try {
       if (continueInBackground) sessionStorage.setItem(backgroundTargetKey, path);
     } catch {
@@ -201,8 +225,29 @@
   }
 
   function advanceOnce(video) {
+    const retry = active.attempts > 0;
+    active.attempts++;
     active.advanced = true;
-    if (!advance(video)) active.advanced = false;
+    active.advancedAt = performance.now();
+    if (!advance(video, retry)) active.advanced = false;
+  }
+
+  function continuePlayback(video, now) {
+    if (video.ended) {
+      if (active.attempts < maxAttempts) advanceOnce(video);
+      return;
+    }
+    if (!video.paused || now - active.playAttemptAt < retryDelay) return;
+    if (active.playAttempts < maxAttempts) {
+      // Facebook can pause again after a play request, so retry a few times.
+      active.playAttempts++;
+      active.playAttemptAt = now;
+      if (video.currentSrc || video.src) video.play().catch(() => {});
+    } else if (active.playAttempts === maxAttempts) {
+      // A Reel reached by scrolling may never load while the tab is hidden.
+      active.playAttempts++;
+      openNextReel(video);
+    }
   }
 
   function scheduleCheck() {
@@ -214,18 +259,21 @@
       const video = currentVideo();
       if (!video) return;
       track(video);
-      if (active.advanced) return;
+      const now = performance.now();
+      const background = document.hidden && continueInBackground;
+      if (active.advanced) {
+        // Facebook may ignore a click or scroll until a hidden tab renders again.
+        if (background && now - active.advancedAt >= retryDelay && active.attempts < maxAttempts) {
+          advanceOnce(video);
+        }
+        return;
+      }
       const card = reelCard(video);
       if (exceedsDuration(video, card) || isSponsored(card)) {
         advanceOnce(video);
         return;
       }
-      if (document.hidden && continueInBackground && video.paused &&
-          !video.ended && video.readyState >= HTMLMediaElement.HAVE_CURRENT_DATA &&
-          !active.backgroundPlayAttempted) {
-        active.backgroundPlayAttempted = true;
-        video.play().catch(() => {});
-      }
+      if (background) continuePlayback(video, now);
     }, 0);
   }
 
@@ -283,7 +331,12 @@
     const video = canAdvance() && document.hidden ? currentVideo() : undefined;
     continueInBackground = Boolean(video && !video.ended && (!video.paused || video === playingAtBlur));
     playingAtBlur = undefined;
-    if (!document.hidden && active) active.backgroundPlayAttempted = false;
+    if (active) {
+      active.attempts = active.advanced ? active.attempts : 0;
+      active.playAttempts = 0;
+      active.playAttemptAt = -Infinity;
+    }
+    updateWatchdog();
     scheduleCheck();
   }, true);
   document.addEventListener("scroll", scheduleCheck, { capture: true, passive: true });
@@ -292,7 +345,11 @@
   }
   for (const type of ["pointerdown", "pointerup", "keydown"]) {
     document.addEventListener(type, event => {
-      if (event.isTrusted && enabled && isReelsPage()) lastUserInput = performance.now();
+      // Browser shortcuts such as Ctrl+Tab are not seeks.
+      if (event.isTrusted && enabled && isReelsPage() &&
+          !event.ctrlKey && !event.metaKey && !event.altKey) {
+        lastUserInput = performance.now();
+      }
     }, true);
   }
   for (const type of ["play", "timeupdate", "ended", "seeking", "emptied"]) {
